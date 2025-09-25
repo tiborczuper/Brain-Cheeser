@@ -23,3 +23,8 @@ To solve each challenge, place all cheese puzzle pieces on the game board to for
 - 🚫 Half holes in the middle of the cheese are not permitted. They are only allowed at the edge of the board.
 
 Each challenge has **only one correct solution**.
+
+## 📌 Notes
+- Beginner mode working with 5 different levels.
+- Reset button working in menu and in-game.
+- Expert mode: coming soon.
