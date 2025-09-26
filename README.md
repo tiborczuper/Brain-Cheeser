@@ -7,12 +7,14 @@
 ### 🪟 Windows
 
 1. Install the latest version of Python: [Download Python](https://www.python.org/downloads/)
-2. Run the `Start Brain Cheeser Win.lnk` file
+2. Run the `Brain Cheeser Win.lnk` file
 3. Enjoy the game! 😄
 
-### 🍎 macOS
+### 🍎 macOS / Linux
 
-- Coming soon!
+1. Install the latest version of Python: [Download Python](https://www.python.org/downloads/)
+3. Run the `Brain Cheeser.command` file (If you see an error message, go to Privacy & Security and select 'Open Anyway')
+4. Enjoy the game! 😄
 
 ## 🎮 How to Play
 
