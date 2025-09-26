@@ -5,21 +5,18 @@ cd /d "%~dp0"
 
 echo Python keresese...
 
-REM Probaljuk meg a python parancsot
 python --version >nul 2>&1
 if %errorlevel%==0 (
     set PYTHON_CMD=python
     goto :found_python
 )
 
-REM Probaljuk meg a py parancsot (Python Launcher)
 py --version >nul 2>&1
 if %errorlevel%==0 (
     set PYTHON_CMD=py
     goto :found_python
 )
 
-REM Probaljuk meg kozvetlenul a telepitesi helyekrol
 if exist "C:\Python*\python.exe" (
     for /d %%i in ("C:\Python*") do (
         if exist "%%i\python.exe" (
@@ -29,7 +26,6 @@ if exist "C:\Python*\python.exe" (
     )
 )
 
-REM Ha meg mindig nem talaltuk, probaljuk az AppData-ban
 if exist "%LOCALAPPDATA%\Programs\Python\Python*\python.exe" (
     for /d %%i in ("%LOCALAPPDATA%\Programs\Python\Python*") do (
         if exist "%%i\python.exe" (
