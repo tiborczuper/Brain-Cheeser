@@ -1,6 +1,10 @@
 import pygame, sys, json, os
 from assets.button import Button
 
+# Automatikus könyvtár beállítás - a main.py fájl könyvtárába váltás
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
+
 pygame.init()
 
 # ================== KONSTANSOK ==================
@@ -302,18 +306,14 @@ def apply_locked_pieces(level:int, placed_cheese:list, cheese_imgs:list, grid_or
 
 def reset_level(level:int, placed_cheese:list, cheese_imgs:list, cheese_used:list, cheese_angles:list, grid_origin, cell_size):
     """Visszaállítja az adott szint alapállapotát: csak a locked pieces maradnak meg."""
-    # Eltávolítjuk az összes nem-locked darabot a placed_cheese-ből
     placed_cheese[:] = [pc for pc in placed_cheese if pc.get('lock', False)]
     
-    # Visszaállítjuk a cheese_used és cheese_angles állapotát
     for i in range(len(cheese_used)):
         cheese_used[i] = False
         cheese_angles[i] = 0
-    
-    # Újra alkalmazzuk a locked pieces-eket és frissítjük a cheese_used-ot
+
     apply_locked_pieces(level, placed_cheese, cheese_imgs, grid_origin, cell_size)
     
-    # A locked pieces-ek miatt frissítjük a cheese_used állapotot
     if placed_cheese:
         for pc in placed_cheese:
             if pc.get('lock', False):
@@ -357,21 +357,19 @@ def check_level_completion(placed_cheese, cheese_imgs, targets, grid_origin, cel
             return False
         return True
 
-    # Preprocess targets: each element can be a single dict or {'any_of': [dict,...]}
-    groups = []  # list of list of pattern dicts
+    groups = []
     for t in targets:
         if 'any_of' in t:
             groups.append(t['any_of'])
         else:
             groups.append([t])
 
-    # Track satisfied flags per group
     satisfied = [False]*len(groups)
 
     for gi, variants in enumerate(groups):
         if satisfied[gi]:
             continue
-        # Try to find any matching placed piece for any variant
+
         for pc in placed_cheese:
             for pat in variants:
                 if pattern_matches(pat, pc):
