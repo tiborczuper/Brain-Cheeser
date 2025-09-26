@@ -36,6 +36,7 @@ $PYTHON_CMD -c "import pygame" 2>/dev/null || {
 }
 
 echo "Játék indítása..."
+cd data
 $PYTHON_CMD main.py
 
 if [ $? -ne 0 ]; then
