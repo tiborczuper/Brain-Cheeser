@@ -23,6 +23,7 @@ To solve each challenge, place all cheese puzzle pieces on the game board to for
 - 🧩 Cheese pieces must not overlap mice or extend beyond the edge of the grid.
 - 🕳️ Empty holes are allowed when two cheese pieces with cut-outs are placed side by side.
 - 🚫 Half holes in the middle of the cheese are not permitted. They are only allowed at the edge of the board.
+- 💰 In Expert mode, placing a cheese slice deducts $10 from your starting budget. Plan your moves carefully!
 
 Each challenge has **only one correct solution**.
 
