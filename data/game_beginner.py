@@ -2,7 +2,8 @@ import pygame, sys
 from config import *
 from assets.button import Button
 from shared import (draw_grid, draw_mice, can_place_piece, check_level_completion,
-                    init_cheese_inventory, load_cheese_images, get_font)
+                    init_cheese_inventory, load_cheese_images, get_font, get_cheese_inventory_position,
+                    draw_placement_preview)
 from beginner import (
     get_beginner_level_mice,
     get_beginner_completion_targets,
@@ -87,6 +88,15 @@ def run_beginner_level(level:int):
                 rect.topleft = (mx-offset[0], my-offset[1])
             screen.blit(draw_img, rect)
             cheese_rects[i] = rect.copy()
+
+        # Draw placement preview when dragging
+        if dragging_idx is not None:
+            draw_placement_preview(screen, mouse_pos, cheese_imgs[dragging_idx], cheese_angles[dragging_idx], 
+                                 grid_origin, cell_size, grid_size, placed_cheese)
+        elif dragging_placed_idx is not None:
+            pc = placed_cheese[dragging_placed_idx]
+            draw_placement_preview(screen, mouse_pos, pc['img'], pc['angle'], 
+                                 grid_origin, cell_size, grid_size, placed_cheese, dragging_placed_idx)
 
         # Buttons
         back_btn = Button(image=None, pos=(SCREEN_WIDTH/2, SCREEN_HEIGHT-60), text_input="BACK", font=get_font(50), base_color=COLOR_BUTTON_BASE, hovering_color="red")
@@ -190,7 +200,7 @@ def run_beginner_level(level:int):
                         if can_place_piece(new_rect, ang, placed_cheese, grid_origin, cell_size, grid_size):
                             placed_cheese.append({'img': cheese_imgs[dragging_idx], 'rect': new_rect.copy(), 'angle': ang})
                             cheese_used[dragging_idx] = True
-                    cheese_rects[dragging_idx].topleft = (INVENTORY_START_X, INVENTORY_START_Y + dragging_idx*INVENTORY_SPACING)
+                    cheese_rects[dragging_idx].topleft = get_cheese_inventory_position(dragging_idx, cheese_imgs)
                     dragging_idx = None
                 # Release placed piece
                 if dragging_placed_idx is not None:
@@ -215,7 +225,7 @@ def run_beginner_level(level:int):
                                 if im == removed['img']:
                                     cheese_used[i] = False
                                     cheese_angles[i] = 0
-                                    cheese_rects[i].topleft = (INVENTORY_START_X, INVENTORY_START_Y + i*INVENTORY_SPACING)
+                                    cheese_rects[i].topleft = get_cheese_inventory_position(i, cheese_imgs)
                                     break
                     dragging_placed_idx = None
 

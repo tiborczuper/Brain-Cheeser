@@ -10,8 +10,7 @@ from config import *
 from assets.button import Button
 from shared import get_font
 from ui import how_to_play_screen
-from game_beginner import run_beginner_level
-from game_expert import run_expert_level
+from game_core import run_game_level
 from beginner import BEGINNER_LEVEL_LOCKED_PIECES
 from expert import EXPERT_LEVEL_LOCKED_PIECES
 
@@ -36,66 +35,61 @@ def reset_saves():
     print(f'[RESET] {removed} save file deleted')
     return removed
 
-def beginner_levels_menu():
-    """Beginner szintválasztó – run_beginner_level hívásával indítja a kiválasztott szintet."""
+def levels_menu(mode):
+    """Univerzális szintválasztó menu mindkét módhoz."""
     global music_muted
     if not pygame.mixer.get_busy() and not music_muted:
         menu_music.play(-1)
+        
+    title = f"{mode.upper()} LEVELS"
+    level_count = BEGINNER_LEVEL_COUNT if mode == 'beginner' else EXPERT_LEVEL_COUNT
+    
     while True:
-        screen.fill((0, 0, 0))  # Black background
+        screen.fill((0, 0, 0))
         mouse_pos = pygame.mouse.get_pos()
-        title_text = get_font(60).render("BEGINNER LEVELS", True, COLOR_LEVEL_TEXT)
+        
+        title_text = get_font(60).render(title, True, COLOR_LEVEL_TEXT)
         screen.blit(title_text, title_text.get_rect(center=(SCREEN_WIDTH/2, 50)))
+        
+        # Level buttons létrehozása
         level_buttons = []
-        start_y = 150; spacing = 120
-        for i in range(BEGINNER_LEVEL_COUNT):
-            btn = Button(image=pygame.image.load(QUIT_BG_IMAGE), pos=(SCREEN_WIDTH/2, start_y + i*spacing),
-                         text_input=f"LEVEL {i+1}", font=get_font(35), base_color=COLOR_BUTTON_BASE, hovering_color=COLOR_BUTTON_HOVER)
+        start_y, spacing = 150, 120
+        for i in range(level_count):
+            btn = Button(
+                image=pygame.image.load(QUIT_BG_IMAGE), 
+                pos=(SCREEN_WIDTH/2, start_y + i*spacing),
+                text_input=f"LEVEL {i+1}", 
+                font=get_font(35), 
+                base_color=COLOR_BUTTON_BASE, 
+                hovering_color=COLOR_BUTTON_HOVER
+            )
             level_buttons.append(btn)
-        back_button = Button(image=None, pos=(100, SCREEN_HEIGHT-50),
-                              text_input="BACK", font=get_font(35), base_color=COLOR_BUTTON_BASE, hovering_color="Red")
-        for b in level_buttons + [back_button]:
-            b.changeColor(mouse_pos); b.update(screen)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                for idx, b in enumerate(level_buttons):
-                    if b.checkForInput(mouse_pos):
-                        run_beginner_level(idx+1)  # blokkol amíg vissza nem tér
-                if back_button.checkForInput(mouse_pos):
-                    return
-        pygame.display.update()
-
-def expert_levels_menu():
-    """Expert szintválasztó – run_expert_level hívásával indítja a kiválasztott szintet."""
-    global music_muted
-    if not pygame.mixer.get_busy() and not music_muted:
-        menu_music.play(-1)
-    while True:
-        screen.fill((0, 0, 0))  # Black background
-        mouse_pos = pygame.mouse.get_pos()
-        title_text = get_font(60).render("EXPERT LEVELS", True, COLOR_LEVEL_TEXT)
-        screen.blit(title_text, title_text.get_rect(center=(SCREEN_WIDTH/2, 50)))
-        level_buttons = []
-        start_y = 150; spacing = 120
-        for i in range(EXPERT_LEVEL_COUNT):
-            btn = Button(image=pygame.image.load(QUIT_BG_IMAGE), pos=(SCREEN_WIDTH/2, start_y + i*spacing),
-                         text_input=f"LEVEL {i+1}", font=get_font(35), base_color=COLOR_BUTTON_BASE, hovering_color=COLOR_BUTTON_HOVER)
-            level_buttons.append(btn)
-        back_button = Button(image=None, pos=(100, SCREEN_HEIGHT-50),
-                              text_input="BACK", font=get_font(35), base_color=COLOR_BUTTON_BASE, hovering_color="Red")
+        
+        back_button = Button(
+            image=None, pos=(100, SCREEN_HEIGHT-50),
+            text_input="BACK", font=get_font(35), 
+            base_color=COLOR_BUTTON_BASE, hovering_color="Red"
+        )
+        
+        # Buttons kirajzolása és event handling
         for btn in level_buttons + [back_button]:
-            btn.changeColor(mouse_pos); btn.update(screen)
+            btn.changeColor(mouse_pos)
+            btn.update(screen)
+            
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
+                pygame.quit()
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # Level button ellenőrzés
                 for idx, btn in enumerate(level_buttons):
                     if btn.checkForInput(mouse_pos):
-                        run_expert_level(idx+1)
+                        run_game_level(mode, idx + 1)
+                        break
+                        
                 if back_button.checkForInput(mouse_pos):
                     return
+                    
         pygame.display.update()
 
 def main_menu():
@@ -110,14 +104,18 @@ def main_menu():
         screen.blit(title, title.get_rect(center=(SCREEN_WIDTH/2, 35)))
         madeby = get_font(20).render("by Czuper Tibor", True, COLOR_LEVEL_TEXT)
         screen.blit(madeby, madeby.get_rect(center=(SCREEN_WIDTH/2, 70)))
+        
+        # Verziószám a jobb felső sarokba
+        version_text = get_font(16).render(GAME_VERSION, True, COLOR_LEVEL_TEXT)
+        screen.blit(version_text, (SCREEN_WIDTH - 110, 10))
 
         beginner_btn = Button(image=pygame.image.load(PLAY_BG_IMAGE), pos=(SCREEN_WIDTH/2, 200), text_input="BEGINNER", font=get_font(50), base_color=COLOR_BUTTON_BASE, hovering_color=COLOR_BUTTON_HOVER)
         expert_btn   = Button(image=pygame.image.load(PLAY_BG_IMAGE), pos=(SCREEN_WIDTH/2, 325), text_input="EXPERT", font=get_font(50), base_color=COLOR_BUTTON_BASE, hovering_color=COLOR_BUTTON_HOVER)
         how_to_play_btn = Button(image=pygame.image.load(PLAY_BG_IMAGE), pos=(SCREEN_WIDTH/2, 450), text_input="HOW TO PLAY", font=get_font(50), base_color=COLOR_BUTTON_BASE, hovering_color=COLOR_BUTTON_HOVER)
         quit_btn     = Button(image=pygame.image.load(QUIT_BG_IMAGE), pos=(SCREEN_WIDTH/2, 575), text_input="QUIT", font=get_font(50), base_color=COLOR_BUTTON_BASE, hovering_color="red")
         reset_btn = Button(image=None, pos=(180, SCREEN_HEIGHT-40), text_input="RESET ALL LEVELS", font=get_font(20), base_color="#ff0000", hovering_color=COLOR_BUTTON_HOVER)
-        mute_text = "UNMUTE" if music_muted else "MUTE"
-        mute_btn = Button(image=None, pos=(SCREEN_WIDTH-80, SCREEN_HEIGHT-40), text_input=mute_text, font=get_font(20), base_color="#ff2222", hovering_color="#ff5555")
+        mute_text = "MUSIC ON" if music_muted else "MUSIC OFF"
+        mute_btn = Button(image=None, pos=(SCREEN_WIDTH-100, SCREEN_HEIGHT-40), text_input=mute_text, font=get_font(20), base_color="#ff2222", hovering_color="#ff5555")
 
         for b in (beginner_btn, expert_btn, quit_btn, how_to_play_btn, reset_btn, mute_btn):
             b.changeColor(mouse_pos); b.update(screen)
@@ -137,9 +135,9 @@ def main_menu():
                         if not pygame.mixer.get_busy():
                             menu_music.play(-1)
                 if beginner_btn.checkForInput(mouse_pos):
-                    beginner_levels_menu()
+                    levels_menu('beginner')
                 if expert_btn.checkForInput(mouse_pos):
-                    expert_levels_menu()
+                    levels_menu('expert')
                 if how_to_play_btn.checkForInput(mouse_pos):
                     how_to_play_screen()
                 if quit_btn.checkForInput(mouse_pos):

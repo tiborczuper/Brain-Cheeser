@@ -2,7 +2,8 @@ import pygame, sys
 from config import *
 from assets.button import Button
 from shared import (draw_grid, draw_mice, can_place_piece, check_level_completion,
-                    init_cheese_inventory, load_cheese_images, get_font)
+                    init_cheese_inventory, load_cheese_images, get_font, get_cheese_inventory_position,
+                    draw_placement_preview)
 from expert import (
     get_expert_level_mice,
     get_expert_completion_targets,
@@ -59,9 +60,11 @@ def run_expert_level(level:int):
         header = get_font(34).render(f"EXPERT LEVEL {level} | MICE: {len(mice)}", True, COLOR_LEVEL_TEXT)
         screen.blit(header, header.get_rect(center=(SCREEN_WIDTH/2, 40)))
         
-        # Money display on the right side, vertically centered
+        # Money display below the grid, centered
         money_text = get_font(40).render(f"${money}", True, COLOR_LEVEL_TEXT)
-        screen.blit(money_text, money_text.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT//2)))
+        grid_center_x = grid_origin[0] + (grid_size * cell_size) // 2
+        grid_bottom_y = grid_origin[1] + (grid_size * cell_size) + 50
+        screen.blit(money_text, money_text.get_rect(center=(grid_center_x, grid_bottom_y)))
 
         # Check completion
         if not level_completed and not game_over:
@@ -92,6 +95,15 @@ def run_expert_level(level:int):
                 rect.topleft = (mx-offset[0], my-offset[1])
             screen.blit(draw_img, rect)
             cheese_rects[i] = rect.copy()
+
+        # Draw placement preview when dragging
+        if dragging_idx is not None:
+            draw_placement_preview(screen, mouse_pos, cheese_imgs[dragging_idx], cheese_angles[dragging_idx], 
+                                 grid_origin, cell_size, grid_size, placed_cheese)
+        elif dragging_placed_idx is not None:
+            pc = placed_cheese[dragging_placed_idx]
+            draw_placement_preview(screen, mouse_pos, pc['img'], pc['angle'], 
+                                 grid_origin, cell_size, grid_size, placed_cheese, dragging_placed_idx)
 
         # Buttons - Reset csak completed vagy game over állapotban
         back_btn = Button(image=None, pos=(SCREEN_WIDTH/2, SCREEN_HEIGHT-60), text_input="BACK", font=get_font(50), base_color=COLOR_BUTTON_BASE, hovering_color="red")
@@ -227,7 +239,7 @@ def run_expert_level(level:int):
                                     
                             save_expert_level(level, placed_cheese, money, level_completed, game_over)
                     
-                    cheese_rects[dragging_idx].topleft = (INVENTORY_START_X, INVENTORY_START_Y + dragging_idx*INVENTORY_SPACING)
+                    cheese_rects[dragging_idx].topleft = get_cheese_inventory_position(dragging_idx, cheese_imgs)
                     dragging_idx = None
                     
                 # Release placed piece
@@ -267,7 +279,7 @@ def run_expert_level(level:int):
                                 if im == removed['img']:
                                     cheese_used[i] = False
                                     cheese_angles[i] = 0
-                                    cheese_rects[i].topleft = (INVENTORY_START_X, INVENTORY_START_Y + i*INVENTORY_SPACING)
+                                    cheese_rects[i].topleft = get_cheese_inventory_position(i, cheese_imgs)
                                     break
                     dragging_placed_idx = None
 

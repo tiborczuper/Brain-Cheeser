@@ -3,6 +3,7 @@ import os, pygame
 pygame.init()
 
 # ================== ALAP KONFIG ==================
+GAME_VERSION = "v1.1.0"
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 720
 GRID_SIZE = 4
@@ -11,7 +12,7 @@ CHEESE_ROWS, CHEESE_COLS = 1, 2
 CHEESE_OVERSIZE = -2
 INVENTORY_START_X = 30
 INVENTORY_START_Y = 100
-INVENTORY_SPACING = 70
+INVENTORY_SPACING = 140
 
 # Expert pénz rendszer
 EXPERT_LEVEL_START_MONEY = {1: 200, 2: 250, 3: 300, 4: 500, 5: 500}
@@ -43,12 +44,9 @@ os.makedirs(SAVE_DIR, exist_ok=True)
 
 # Pygame alap
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Brain Cheeser")
+pygame.display.set_caption(f"Brain Cheeser {GAME_VERSION}")
 
 # Hangok / háttér
 background = pygame.image.load(BACKGROUND_IMAGE)
 menu_music = pygame.mixer.Sound(MENU_MUSIC)
 completed_sound = pygame.mixer.Sound(COMPLETED_SOUND)
-
-# Globális állapot
-music_muted = False

@@ -1,9 +1,11 @@
 import json, os, pygame
 from config import *
 from shared import *
+from common import create_mice_from_edges
 
-# Globális sajtkép lista (egyszeri betöltés a modul importjakor)
-CHEESE_IMAGES = load_cheese_images()
+# Globális sajtkép lista
+from beginner import get_cheese_images
+CHEESE_IMAGES = get_cheese_images
 
 # ================== EXPERT DATA ==================
 
@@ -78,19 +80,7 @@ LEVEL_COMPLETION_TARGETS = {
 
 EXPERT_LEVEL_COMPLETION_TARGETS = LEVEL_COMPLETION_TARGETS
 
-#############################################
-# EGÉR ELHELYEZÉS – EDGE INDEX ALAPÚ RENDSZER
-#############################################
-
-EDGE_INDEX_MAP = {
-    1: ((1,1),(1,2)), 2: ((1,2),(1,3)), 3: ((1,3),(1,4)),
-    4: ((1,1),(2,1)), 5: ((1,2),(2,2)), 6: ((1,3),(2,3)), 7: ((1,4),(2,4)),
-    8: ((2,1),(2,2)), 9: ((2,2),(2,3)), 10: ((2,3),(2,4)),
-    11: ((2,1),(3,1)), 12: ((2,2),(3,2)), 13: ((2,3),(3,3)), 14: ((2,4),(3,4)),
-    15: ((3,1),(3,2)), 16: ((3,2),(3,3)), 17: ((3,3),(3,4)),
-    18: ((3,1),(4,1)), 19: ((3,2),(4,2)), 20: ((3,3),(4,3)), 21: ((3,4),(4,4)),
-    22: ((4,1),(4,2)), 23: ((4,2),(4,3)), 24: ((4,3),(4,4)),
-}
+# ================== EXPERT EGEREK ==================
 
 LEVEL_MOUSE_EDGE_INDICES = {
     1: [3,12,14,18,19],
@@ -100,21 +90,11 @@ LEVEL_MOUSE_EDGE_INDICES = {
     5: [2,4,10,19],
 }
 
-def _edge_index_to_cells(idx:int):
-        return EDGE_INDEX_MAP[idx]
-
 EXPERT_LEVEL_MICE = {}
 for lvl, edges in LEVEL_MOUSE_EDGE_INDICES.items():
-    pairs = []
-    for e in edges:
-        try:
-            a,b = _edge_index_to_cells(e)
-            pairs.append((a,b))
-        except Exception as err:
-            print('[MOUSE EDGE ERROR]', err)
-    EXPERT_LEVEL_MICE[lvl] = pairs
+    EXPERT_LEVEL_MICE[lvl] = create_mice_from_edges(edges)
 
-# ================== EXPERT HELPERS ==================
+# ================== EXPERT FUNCTIONS ==================
 
 def get_expert_locked_pieces(level):
     return EXPERT_LEVEL_LOCKED_PIECES.get(level, [])
@@ -128,7 +108,7 @@ def get_expert_level_mice(level):
 def apply_expert_locked_pieces(level, placed_cheese, cheese_imgs, grid_origin, cell_size):
     apply_locked_specs(get_expert_locked_pieces(level), placed_cheese, cheese_imgs, grid_origin, cell_size, warn_prefix='EXPERT')
 
-# Save / Load (kept separate for clarity, though structurally similar to beginner)
+# ================== SAVE / LOAD ==================
 
 EXPERT_SAVE_FILE = os.path.join(SAVE_DIR, 'expert_progress.json')
 
@@ -145,7 +125,7 @@ def save_expert_level(current_level, placed_cheese, money=None, level_completed=
     
     # Update data for current level
     level_data = {
-        'pieces': serialize_pieces(placed_cheese, CHEESE_IMAGES),
+        'pieces': serialize_pieces(placed_cheese, get_cheese_images()),
         'level_completed': level_completed,
         'game_over': game_over
     }
@@ -175,7 +155,7 @@ def load_expert_level(level):
             # Old format - convert to new format
             old_level = all_data.get('level', 1)
             if old_level == level:
-                pieces = deserialize_pieces(all_data.get('pieces', []), CHEESE_IMAGES)
+                pieces = deserialize_pieces(all_data.get('pieces', []), get_cheese_images())
                 money = all_data.get('money', None)
                 level_completed = all_data.get('level_completed', False)
                 game_over = all_data.get('game_over', False)
@@ -185,7 +165,7 @@ def load_expert_level(level):
         else:
             # New format - load specific level
             level_data = all_data.get(str(level), {})
-            pieces = deserialize_pieces(level_data.get('pieces', []), CHEESE_IMAGES)
+            pieces = deserialize_pieces(level_data.get('pieces', []), get_cheese_images())
             money = level_data.get('money', None)
             level_completed = level_data.get('level_completed', False)
             game_over = level_data.get('game_over', False)
@@ -195,7 +175,4 @@ def load_expert_level(level):
         return level, [], None, False, False
 
 
-def reset_expert_level(level, cheese_imgs, grid_origin, cell_size):
-    placed = []
-    apply_expert_locked_pieces(level, placed, cheese_imgs, grid_origin, cell_size)
-    return placed
+

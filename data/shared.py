@@ -29,12 +29,29 @@ def init_cheese_inventory(cheese_imgs):
     cheese_rects = []
     cheese_angles = []
     cheese_used = []
+    
     for i, img in enumerate(cheese_imgs):
-        pos = (INVENTORY_START_X, INVENTORY_START_Y + i*INVENTORY_SPACING - CHEESE_OVERSIZE//2)
+        pos = get_cheese_inventory_position(i, cheese_imgs)
         cheese_rects.append(img.get_rect(topleft=pos))
         cheese_angles.append(0)
         cheese_used.append(False)
     return cheese_rects, cheese_angles, cheese_used
+
+def get_cheese_inventory_position(cheese_index, cheese_imgs):
+    """Kiszámolja az inventory pozíciót a sajt darab index alapján."""
+    left_count = 4
+    left_total_height = (left_count - 1) * INVENTORY_SPACING
+    left_start_y = (SCREEN_HEIGHT - left_total_height) // 2 - 80
+    
+    if cheese_index < left_count:
+        return (INVENTORY_START_X, left_start_y + cheese_index * INVENTORY_SPACING - CHEESE_OVERSIZE//2)
+    else:
+        right_count = len(cheese_imgs) - left_count
+        right_total_height = (right_count - 1) * INVENTORY_SPACING
+        right_start_y = (SCREEN_HEIGHT - right_total_height) // 2 - 80
+        right_index = cheese_index - left_count
+        right_x = SCREEN_WIDTH - cheese_imgs[cheese_index].get_width() - INVENTORY_START_X
+        return (right_x, right_start_y + right_index * INVENTORY_SPACING - CHEESE_OVERSIZE//2)
 
 def piece_cells(rect, angle, grid_origin, cell_size):
     rel_x = rect.x - grid_origin[0]
@@ -54,18 +71,19 @@ def build_occupied_cells(placed_cheese, grid_origin, cell_size, exclude_idx=None
     return occ
 
 def draw_grid(screen, grid_size, cell_size, grid_origin):
+    """Játéktábla kirajzolása."""
     for r in range(grid_size):
         for c in range(grid_size):
             rect = pygame.Rect(grid_origin[0] + c*cell_size, grid_origin[1] + r*cell_size, cell_size, cell_size)
             pygame.draw.rect(screen, COLOR_GRID_FILL, rect)
             pygame.draw.rect(screen, COLOR_GRID_BORDER, rect, 2)
             if DEBUG_OVERLAY:
-                # Cell coordinates overlay (1-based)
                 font = get_font(14)
                 label = font.render(f"{r+1},{c+1}", True, (60,60,60))
                 screen.blit(label, (rect.x+4, rect.y+4))
 
 def draw_mice(screen, mice, grid_origin, cell_size):
+    """Egerek kirajzolása a táblán."""
     mouse_img = pygame.image.load(MOUSE_IMAGE).convert_alpha()
     mouse_img = pygame.transform.smoothscale(mouse_img, (40, 40))
     for (a, b) in mice:
@@ -80,6 +98,42 @@ def draw_mice(screen, mice, grid_origin, cell_size):
             font = get_font(16)
             txt = font.render("M", True, (200,50,50))
             screen.blit(txt, (center[0]-8, center[1]-8))
+
+def draw_placement_preview(screen, mouse_pos, dragging_img, angle, grid_origin, cell_size, grid_size, placed_cheese, exclude_idx=None):
+    """Draw a green preview of where the piece would be placed."""
+    mx, my = mouse_pos
+    cheese_cols, cheese_rows = CHEESE_COLS, CHEESE_ROWS
+    w, h = (cheese_cols, cheese_rows) if angle % 180 == 0 else (cheese_rows, cheese_cols)
+    
+    # Calculate grid position based on mouse
+    tmp = pygame.transform.rotate(dragging_img, angle)
+    tmp_rect = tmp.get_rect(center=(mx, my))
+    cx, cy = tmp_rect.center
+    gx = int((cx - grid_origin[0]) / cell_size)
+    gy = int((cy - grid_origin[1]) / cell_size)
+    
+    # Check if position is valid
+    if 0 <= gx <= grid_size - w and 0 <= gy <= grid_size - h:
+        sx = grid_origin[0] + gx * cell_size
+        sy = grid_origin[1] + gy * cell_size
+        preview_rect = pygame.Rect(sx, sy, w * cell_size, h * cell_size)
+        
+        # Check if placement is allowed
+        test_rect = pygame.Rect(sx, sy, tmp.get_width(), tmp.get_height())
+        if can_place_piece(test_rect, angle, placed_cheese, grid_origin, cell_size, grid_size, exclude_idx):
+            # Draw green preview - valid placement
+            pygame.draw.rect(screen, (0, 255, 0), preview_rect, 4)
+            # Fill with semi-transparent green
+            preview_surface = pygame.Surface((preview_rect.width, preview_rect.height), pygame.SRCALPHA)
+            preview_surface.fill((0, 255, 0, 60))
+            screen.blit(preview_surface, preview_rect.topleft)
+        else:
+            # Draw red preview - invalid placement
+            pygame.draw.rect(screen, (255, 0, 0), preview_rect, 4)
+            # Fill with semi-transparent red
+            preview_surface = pygame.Surface((preview_rect.width, preview_rect.height), pygame.SRCALPHA)
+            preview_surface.fill((255, 0, 0, 60))
+            screen.blit(preview_surface, preview_rect.topleft)
 
 def img_index(img, cheese_imgs):
     for i, im in enumerate(cheese_imgs):
