@@ -60,11 +60,12 @@ class GameCore:
             self.game_over = saved_game_over
             self.level_completed = saved_completed
         
-        # Közös állapot változók
+        # Közös állapot változók  
         if self.mode == 'beginner':
             self.level_completed = False
-        self.played_completion_sound = self.level_completed if self.mode == 'expert' else False
-        self.played_failed_sound = self.game_over if self.mode == 'expert' else False
+        elif self.mode == 'expert' and self.level_completed:
+            # Ha expert szint már completed, játssza le a hangot
+            completed_sound.play()
         
         # Locked pieces alkalmazása
         self.apply_locked(self.level, self.placed_cheese, self.cheese_imgs, self.grid_origin, self.cell_size)
@@ -180,14 +181,21 @@ class GameCore:
             self.placed_cheese, self.cheese_imgs, self.targets, self.grid_origin, self.cell_size
         ):
             self.level_completed = True
+            completed_sound.play()
             self.save_game_state()
             return True
         return False
     
     def check_game_over(self):
         """Game over ellenőrzése (csak expert módban)."""
-        if self.mode == 'expert' and self.money < EXPERT_PIECE_COST and not self.level_completed:
+        if self.mode == 'expert' and self.money < EXPERT_PIECE_COST and not self.level_completed and not self.game_over:
             self.game_over = True
+            # Play game over sound
+            try:
+                failed_sound = pygame.mixer.Sound("assets/sounds/failed.mp3")
+                failed_sound.play()
+            except:
+                pass  # Hang fájl nem található, de a játék folytatódjon
     
     def save_game_state(self):
         """Játékállapot mentése."""
@@ -204,11 +212,9 @@ class GameCore:
         self.mark_used_inventory_pieces()
         
         self.level_completed = False
-        self.played_completion_sound = False
         
         if self.mode == 'expert':
             self.game_over = False
-            self.played_failed_sound = False
             self.money = EXPERT_LEVEL_START_MONEY.get(self.level, 100)
     
     def draw_game(self, screen, mouse_pos):
@@ -304,17 +310,9 @@ class GameCore:
         if self.level_completed:
             comp = get_font(70).render("COMPLETED!", True, COLOR_COMPLETION)
             screen.blit(comp, comp.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT//2 - 225)))
-            if not self.played_completion_sound:
-                completed_sound = pygame.mixer.Sound(COMPLETED_SOUND)
-                completed_sound.play()
-                self.played_completion_sound = True
         elif self.mode == 'expert' and self.game_over:
             go = get_font(70).render("GAME OVER", True, (200, 40, 40))
             screen.blit(go, go.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT//2 - 225)))
-            if not self.played_failed_sound:
-                failed_sound = pygame.mixer.Sound("assets/sounds/failed.mp3")
-                failed_sound.play()
-                self.played_failed_sound = True
         
         return back_btn, reset_btn, reset_active
 

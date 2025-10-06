@@ -1,8 +1,7 @@
 """Belépési pont / menük.
 
-Ebben a fájlban nincs játékmenet: a beginner és expert loop külön modulokban
-(game_beginner.py / game_expert.py) futnak. Itt csak a menük, a némítás és a
-mentések törlése található meg.
+Ebben a fájlban nincs játékmenet: a beginner és expert loop a game_core.py
+modulban fut egységesen. Itt csak a menük, a némítás és a mentések törlése található meg.
 """
 
 import pygame, sys, os

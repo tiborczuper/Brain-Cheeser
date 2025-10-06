@@ -44,8 +44,8 @@ def run_expert_level(level:int):
     game_over = saved_game_over
     money = saved_money if saved_money is not None else EXPERT_LEVEL_START_MONEY.get(level, 100)
     
-    played_completion_sound = level_completed
-    played_failed_sound = game_over
+    played_completion_sound = False
+    played_failed_sound = False
 
     dragging_idx = None
     dragging_placed_idx = None
@@ -70,6 +70,8 @@ def run_expert_level(level:int):
         if not level_completed and not game_over:
             if check_level_completion(placed_cheese, cheese_imgs, targets, grid_origin, cell_size):
                 level_completed = True
+                if not played_completion_sound:
+                    completed_sound.play(); played_completion_sound = True
                 # Save state on completion
                 save_expert_level(level, placed_cheese, money, level_completed, game_over)
 
@@ -119,10 +121,6 @@ def run_expert_level(level:int):
         if level_completed:
             comp = get_font(70).render("COMPLETED!", True, COLOR_COMPLETION)
             screen.blit(comp, comp.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT//2 - 225)))
-            if not played_completion_sound:
-                completed_sound = pygame.mixer.Sound("assets/sounds/completed.mp3")
-                completed_sound.play()
-                played_completion_sound = True
         elif game_over:
             go = get_font(70).render("GAME OVER", True, (200,40,40))
             screen.blit(go, go.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT//2 - 225)))
