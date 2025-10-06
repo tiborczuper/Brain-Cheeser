@@ -50,8 +50,7 @@ class GameCore:
         
         # Mode-specifikus betöltés
         if self.mode == 'beginner':
-            saved_level, saved_pieces = self.load_level()
-            self.placed_cheese = saved_pieces if saved_level == self.level else []
+            self.placed_cheese = self.load_level(self.level)
             self.money = None
             self.game_over = False
         else:  # expert

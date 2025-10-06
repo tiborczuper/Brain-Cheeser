@@ -115,7 +115,68 @@ def apply_beginner_locked_pieces(level, placed_cheese, cheese_imgs, grid_origin,
 BEGINNER_SAVE_FILE = os.path.join(SAVE_DIR, 'beginner_progress.json')
 
 def save_beginner_level(current_level, placed_cheese):
-    save_level_generic(BEGINNER_SAVE_FILE, current_level, placed_cheese, get_cheese_images())
+    # Save level with multi-level support like expert mode
+    # Load existing data first to preserve other levels
+    all_data = {}
+    if os.path.exists(BEGINNER_SAVE_FILE):
+        try:
+            with open(BEGINNER_SAVE_FILE, 'r', encoding='utf-8') as f:
+                all_data = json.load(f)
+        except:
+            all_data = {}
+    
+    # Update data for current level
+    level_data = {
+        'pieces': serialize_pieces(placed_cheese, get_cheese_images())
+    }
+    
+    all_data[str(current_level)] = level_data
+    
+    try:
+        with open(BEGINNER_SAVE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(all_data, f)
+    except Exception as e:
+        print('[BEGINNER SAVE ERROR]', e)
 
-def load_beginner_level():
-    return load_level_generic(BEGINNER_SAVE_FILE, get_cheese_images(), default_level=1)
+def load_beginner_level(level=None):
+    # Load specific level or return highest completed level + pieces if level=None
+    if not os.path.exists(BEGINNER_SAVE_FILE):
+        return (1, []) if level is None else []
+    
+    try:
+        with open(BEGINNER_SAVE_FILE, 'r', encoding='utf-8') as f:
+            all_data = json.load(f)
+        
+        # Check if this is old format (single level) or new format (multiple levels)
+        if 'level' in all_data:
+            # Old format - convert to new format and return
+            old_level = all_data.get('level', 1)
+            pieces = deserialize_pieces(all_data.get('pieces', []), get_cheese_images())
+            if level is None:
+                return old_level, pieces
+            elif level == old_level:
+                return pieces
+            else:
+                return []
+        else:
+            # New format
+            if level is None:
+                # Find the highest level with progress
+                max_level = 1
+                latest_pieces = []
+                for level_str, level_data in all_data.items():
+                    try:
+                        level_num = int(level_str)
+                        if level_num > max_level:
+                            max_level = level_num
+                            latest_pieces = deserialize_pieces(level_data.get('pieces', []), get_cheese_images())
+                    except ValueError:
+                        continue
+                return max_level, latest_pieces
+            else:
+                # Load specific level
+                level_data = all_data.get(str(level), {})
+                return deserialize_pieces(level_data.get('pieces', []), get_cheese_images())
+    except Exception as e:
+        print('[BEGINNER LOAD ERROR]', e)
+        return (1, []) if level is None else []
