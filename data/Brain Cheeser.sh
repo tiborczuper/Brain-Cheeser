@@ -25,19 +25,14 @@ fi
 echo "Python verzió: $($PYTHON_CMD --version)"
 
 echo "Pygame ellenőrzése és telepítése..."
-$PYTHON_CMD -c "import pygame" 2>/dev/null || {
+$PYTHON_CMD -c "import pygame; print('pygame version:', pygame.version.ver)" 2>/dev/null
+if [ $? -ne 0 ]; then
     echo "Pygame nem található, pygame-ce telepítés..."
-    $PYTHON_CMD -m pip install pygame-ce --user || {
-        echo "Pygame telepítése sudo-val..."
-        sudo $PYTHON_CMD -m pip install pygame-ce || {
-            echo "HIBA: Pygame-ce telepítés sikertelen!"
-            echo "Próbálkozzon manuális telepítéssel: $PYTHON_CMD -m pip install pygame-ce"
-            read -p "Nyomjon Enter-t a kilépéshez..."
-            exit 1
-        }
-    }
+    $PYTHON_CMD -m pip install pygame-ce
     echo "Pygame-ce telepítés befejezve!"
-}
+else
+    echo "Pygame már telepítve van."
+fi
 
 echo "Játék indítása..."
 $PYTHON_CMD main.py
