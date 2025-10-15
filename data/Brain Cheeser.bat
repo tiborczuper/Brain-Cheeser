@@ -55,16 +55,7 @@ if %errorlevel% neq 0 (
         pause
         exit /b 1
     )
-    
-    echo Pygame-ce telepites befejezve, ujra ellenorzes...
-    %PYTHON_CMD% -c "import pygame; print('pygame version:', pygame.version.ver)" 2>nul
-    if %errorlevel% neq 0 (
-        echo HIBA: Pygame meg mindig nem elerheto a telepites utan!
-        echo Probalkozzon manualis telepitessel: python -m pip install pygame-ce
-        pause
-        exit /b 1
-    )
-    echo Pygame-ce sikeresen telepitve!
+    echo Pygame-ce telepites befejezve!
 ) else (
     echo Pygame mar telepitve van.
 )
