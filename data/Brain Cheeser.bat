@@ -78,8 +78,35 @@ exit /b 1
 echo Python megtalalva: %PYTHON_CMD%
 
 echo Pygame ellenorzese es telepitese...
-%PYTHON_CMD% -c "import pygame" 2>nul || %PYTHON_CMD% -m pip install pygame
+%PYTHON_CMD% -c "import pygame; print('pygame version:', pygame.version.ver)" 2>nul
+if %errorlevel% neq 0 (
+    echo Pygame nem talalhato, pygame-ce telepites...
+    %PYTHON_CMD% -m pip install pygame-ce
+    if %errorlevel% neq 0 (
+        echo HIBA: Pygame-ce telepites sikertelen!
+        echo Probalkozzon manualis telepitessel: python -m pip install pygame-ce
+        pause
+        exit /b 1
+    )
+    
+    echo Pygame-ce telepites befejezve, ujra ellenorzes...
+    %PYTHON_CMD% -c "import pygame; print('pygame version:', pygame.version.ver)" 2>nul
+    if %errorlevel% neq 0 (
+        echo HIBA: Pygame meg mindig nem elerheto a telepites utan!
+        echo Probalkozzon manualis telepitessel: python -m pip install pygame-ce
+        pause
+        exit /b 1
+    )
+    echo Pygame-ce sikeresen telepitve!
+) else (
+    echo Pygame mar telepitve van.
+)
 
 echo Jatek inditasa...
 %PYTHON_CMD% main.py
+if %errorlevel% neq 0 (
+    echo.
+    echo A jatek hibával futott le.
+    echo Ellenorizze hogy minden fajl a helyen van-e.
+)
 pause

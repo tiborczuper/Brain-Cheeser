@@ -26,9 +26,9 @@ echo "Python verzió: $($PYTHON_CMD --version)"
 echo "Pygame ellenőrzése és telepítése..."
 $PYTHON_CMD -c "import pygame" 2>/dev/null || {
     echo "Pygame telepítése..."
-    $PYTHON_CMD -m pip install pygame --user || {
+    $PYTHON_CMD -m pip install pygame-ce --user || {
         echo "Pygame telepítése sudo-val..."
-        sudo $PYTHON_CMD -m pip install pygame
+        sudo $PYTHON_CMD -m pip install pygame-ce
     }
 }
 
