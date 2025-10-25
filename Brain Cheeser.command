@@ -5,7 +5,7 @@ export PYTHONIOENCODING=utf-8
 
 cd "$(dirname "$0")"
 
-echo "Brain Cheeser Játék Indító"
+echo "Brain Cheeser Game Starter"
 echo "=========================="
 
 echo "Python keresése..."
